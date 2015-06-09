@@ -24,9 +24,7 @@ end if
 'dim xHttp: Set xHttp = createobject("Microsoft.XMLHTTP")
 dim xHttp: Set xHttp = createobject("MSXML2.ServerXMLHTTP.6.0")
 dim bStrm: Set bStrm = createobject("Adodb.Stream")
-'xHttp.Open "GET", "http://getdotastats.com/d2mods/api/lobby_version.txt", False
-'xHttp.Open "GET", "https://github.com/GetDotaStats/GetDotaLobby/raw/master/version.txt", False
-xHttp.Open "GET", "https://raw.githubusercontent.com/GetDotaStats/GetDotaLobby/master/version.txt", False
+xHttp.Open "GET", "https://raw.githubusercontent.com/Veroalla/LOD-Auto-Installer/master/lod.txt", False
 xHttp.Send
 
 dim latestVer, currentVer, latestVerStr, currentVerStr
@@ -36,8 +34,8 @@ currentVer = 0.00
 
 dim verFile
 Set objFSO = CreateObject("Scripting.FileSystemObject")
-If (objFSO.FileExists(appDataLocation & "\version.txt")) Then
-  Set verFile = objFSO.OpenTextFile(appDataLocation & "\version.txt",1)
+If (objFSO.FileExists(appDataLocation & "\lod.txt")) Then
+  Set verFile = objFSO.OpenTextFile(appDataLocation & "\lod.txt",1)
   currentVerStr = verFile.ReadAll()
   If (InStr(currentVerStr, ".") > 0) Then
     currentVer = CDbl(currentVerStr)
@@ -49,24 +47,22 @@ End If
 Wscript.echo "Latest Version: " & latestVer & " -- Current Version: " & currentVer
 
 If (currentVer >= latestVer) Then
-  Wscript.echo "Your Lobby Explorer is up to date.  No update will be performed"
+  Wscript.echo "Your LOD is already up do date. Problems? Run uninstaller"
   GoSleep(2)
   Wscript.quit(0)
 End If
 
-Wscript.echo "Your Lobby Explorer is not up to date.  Downloading new version.  Please wait."
+Wscript.echo "Your LOD is not up to date.  Downloading new version.  Please wait..."
 Set xHttp = createobject("MSXML2.ServerXMLHTTP.6.0")
 Set bStrm = createobject("Adodb.Stream")
-'xHttp.Open "GET", "https://github.com/GetDotaStats/GetDotaLobby/raw/lobbybrowser/play_weekend_tourney.zip", False
-xHttp.Open "GET", "https://github.com/GetDotaStats/GetDotaLobby/raw/master/play_weekend_tourney.zip", False
-'xHttp.Open "GET", "https://s3.amazonaws.com/gdslx/play_weekend_tourney.zip", False
+xHttp.Open "GET", "https://github.com/Veroalla/LOD-Auto-Installer/raw/master/lod.zip", False
 xHttp.Send
 
 with bStrm
     .type = 1 '//binary
     .open
     .write xHttp.responseBody
-    .savetofile appDataLocation & "\lx.zip", 2 '//overwrite
+    .savetofile appDataLocation & "\lod.zip", 2 '//overwrite
 end with
 
 Wscript.echo "Download complete.  Finding your steam directory paths."
@@ -101,34 +97,34 @@ objFile.Close
 dim found
 found = False
 
-Wscript.echo "INSTALLING LOBBY EXPLORER"
+Wscript.echo "INSTALLING LATEST LOD"
 For each path In steampaths
 	if path <> "" then
 		if objFSO.FolderExists(path & "\steamapps\common\dota 2 beta\") then
 			found = True
-			Wscript.echo "Installing in path: " & path & "\steamapps\common\dota 2 beta\resource\flash3"
+			Wscript.echo "Installing in path: " & path & "\steamapps\common\dota 2 beta\dota"
 			
 			Dim objShell
 			Set objShell = WScript.CreateObject ("WScript.shell")
-      objShell.run "cmd /c mkdir """ & path & "\steamapps\common\dota 2 beta\dota\resource\flash3""", 7, true
-			'objShell.run "xcopy resource """ & path & "\steamapps\common\dota 2 beta\dota\resource""" & " /Y /E ", 7, true
+      objShell.run "cmd /c mkdir """ & path & "\steamapps\common\dota 2 beta\dota""", 7, true
+			'objShell.run "xcopy resource """ & path & "\steamapps\common\dota 2 beta\dota""" & " /Y /E ", 7, true
 			Set objShell = Nothing
       
-      UnzipFiles objFSO.GetAbsolutePathName(path & "\steamapps\common\dota 2 beta\dota\resource\flash3"), objFSO.GetAbsolutePathName(appDataLocation & "\lx.zip")
+      UnzipFiles objFSO.GetAbsolutePathName(path & "\steamapps\common\dota 2 beta\dota"), objFSO.GetAbsolutePathName(appDataLocation & "\lx.zip")
 		end if 
 	end if
 Next
 
 if found then
-	Wscript.echo "DONE INSTALLING"
+	Wscript.echo "Success! Restart Dota to finish installation!"
 else
-	Wscript.echo "Unable to find dota directory.  Installation failed."
+	Wscript.echo "Unable to find dota directory. You will probably never find Waldo either :)"
   GoSleep(3)
   wscript.quit(0)
 end if 
 
-' Write out the version.txt since the update suceeded
-Set verFile = objFSO.OpenTextFile(appDataLocation & "\version.txt",2,true)
+' Write out the lod.txt since the update suceeded
+Set verFile = objFSO.OpenTextFile(appDataLocation & "\lod.txt",2,true)
 verFile.WriteLine(latestVerStr)
 verFile.Close
 Set verFile = Nothing
